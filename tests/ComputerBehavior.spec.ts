@@ -1,23 +1,28 @@
-import { test, expect } from '@playwright/test';
-import { CheckersPage, PieceName } from '../pages/CheckersPage';
+import { test, expect, devices } from '@playwright/test';
+import { CheckersPage, PieceName, PieceState } from '../pages/CheckersPage';
 
-test.describe('Checkers Computer Behavior (Sanity Checks)', () => {
+test.describe.configure({ mode: 'parallel' });
+
+test.describe('Checkers Responsiveness (Mobile)', () => {
   let checkersPage: CheckersPage;
+
+  // Use a mobile viewport for all tests in this file
+  // test.use({ ...devices['iPhone 13'] });
 
   test.beforeEach(async ({ page }) => {
     checkersPage = new CheckersPage(page);
     await checkersPage.navigate();
   });
 
-  test('Computer - Valid Move', async ({ page }) => {
-    // Test logic goes here
+  test('Mobile - Render', async ({ page }) => {
+    
   });
 
-  test('Computer - Capture', async ({ page }) => {
-    // Test logic goes here
+  test('Mobile - Play', async ({ page }) => {
+    
   });
 
-  test('Computer - Kinging', async ({ page }) => {
-    // Test logic goes here
+  test('Mobile - Restart', async ({ page }) => {
+    
   });
 });

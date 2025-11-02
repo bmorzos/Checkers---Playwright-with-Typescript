@@ -1,6 +1,8 @@
 import { test, expect, devices } from '@playwright/test';
 import { CheckersPage, PieceName } from '../pages/CheckersPage';
 
+test.describe.configure({ mode: 'parallel' });
+
 test.describe('Checkers Responsiveness (Mobile)', () => {
   let checkersPage: CheckersPage;
 
@@ -13,14 +15,14 @@ test.describe('Checkers Responsiveness (Mobile)', () => {
   });
 
   test('Mobile - Render', async ({ page }) => {
-    // Test logic goes here
+    
   });
 
   test('Mobile - Play', async ({ page }) => {
-    // Test logic goes here
+    
   });
 
   test('Mobile - Restart', async ({ page }) => {
-    // Test logic goes here
+    
   });
 });
