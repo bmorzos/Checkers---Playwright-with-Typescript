@@ -111,21 +111,29 @@ test.describe('Kinging Mechanics', () => {
     const setup: { x: number; y: number; piece: PieceName }[] = [
       { x: 5, y: 5, piece: "red" },
       { x: 4, y: 6, piece: "blue" },
-      { x: 2, y: 6, piece: "blue" },
-      { x: 7, y: 7, piece: "blue" },
+      { x: 2, y: 6, piece: "blue" }, // The second piece to be jumped
+      { x: 7, y: 7, piece: "blue" }, // Extra piece
     ];
     await checkersPage.setBoard(setup);
 
     const move = await checkersPage.startMove({ x: 5, y: 5 });
+    
     await move.jumpTo({ x: 3, y: 7 });
 
     let currentBoard = await checkersPage.getLogicalBoardState();
     expect(currentBoard[3][7]).toBe(PieceState.RedKing);
     expect(currentBoard[4][6]).toBe(PieceState.Empty);
-    expect(await checkersPage.getMessageText()).toContain("Select an orange piece to move.");
     
+    expect(await checkersPage.getMessageText()).toContain(
+      "Complete the double jump or click on your piece to stay still."
+    );
+    
+    // THIS TEST WILL FAIL: The actual message will be 
+    // "Select an orange piece to move." because the game bug
+    // prematurely ends the player's turn.
+    
+    // This code will not be reached due to the failed assertion,
     await move.jumpTo({ x: 1, y: 5 });
-
     currentBoard = await checkersPage.getLogicalBoardState();
     expect(currentBoard[1][5]).toBe(PieceState.RedKing);
     expect(currentBoard[2][6]).toBe(PieceState.Empty);

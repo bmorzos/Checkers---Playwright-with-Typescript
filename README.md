@@ -56,3 +56,4 @@ To execute the entire test suite in headless mode:
 
 ```bash
 npx playwright test
+```

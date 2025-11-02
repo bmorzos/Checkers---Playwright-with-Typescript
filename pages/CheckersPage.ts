@@ -1,6 +1,5 @@
 import { Page, Locator } from '@playwright/test';
 
-// --- Type Definitions ---
 export type PieceName = "red" | "blue" | "redKing" | "blueKing";
 export type Coords = { x: number; y: number };
 export type LogicalBoard = number[][];
@@ -13,19 +12,11 @@ export enum PieceState {
   BlueKing = -1.1,
 }
 
-/**
- * This class represents a multi-jump move that is in progress.
- * It's returned by `checkersPage.startMove()`
- */
 export class MoveInProgress {
   constructor(private checkersPage: CheckersPage) {}
 
-  /**
-   * Clicks the next destination in a multi-jump sequence.
-   */
   async jumpTo(to: Coords) {
     await this.checkersPage.clickSquare(to.x, to.y);
-    // This is the implementation detail that is now hidden from the test
     await this.checkersPage.skipGameWait();
   }
 }
@@ -44,8 +35,6 @@ export class CheckersPage {
     this.messageLocator = this.page.locator('#message');
   }
 
-  // --- 1. Core Actions (Low-Level) ---
-
   async navigate() {
     await this.page.goto('https://www.gamesforthebrain.com/game/checkers/');
     await this.page.locator('#adSideBanner').evaluate(element => {
@@ -53,7 +42,6 @@ export class CheckersPage {
     });
   }
 
-  // Made public so MoveInProgress can access it, but tests shouldn't use it directly
   async clickSquare(x: number, y: number) {
     await this.page.locator(`img[name="space${x}${y}"]`).click();
   }
@@ -62,43 +50,21 @@ export class CheckersPage {
     await this.page.getByRole('link', { name: 'Restart...' }).click();
   }
 
-  // --- 2. Business Logic (High-Level Actions) ---
-
-  /**
-   * Selects a piece but does not complete a move.
-   * Used for "select/deselect" tests.
-   */
   async selectPiece(coords: Coords) {
     await this.clickSquare(coords.x, coords.y);
   }
 
-  /**
-   * Completes a full player turn by selecting a piece and
-   * moving it to a destination.
-   * Use this for simple, single-move tests.
-   */
   async movePiece(from: Coords, to: Coords) {
     await this.selectPiece(from);
     await this.clickSquare(to.x, to.y);
     await this.skipGameWait();
   }
 
-  /**
-   * Starts a multi-jump move sequence.
-   * This selects the 'from' piece and returns a 'MoveInProgress'
-   * object that can be used to perform subsequent jumps.
-   */
   async startMove(from: Coords): Promise<MoveInProgress> {
     await this.selectPiece(from);
     return new MoveInProgress(this);
   }
 
-  // --- 3. State Setters (Test Setup) ---
-
-  /**
-   * Forces the game to be in a "player turn" state.
-   * This is now a "private" helper for the page object.
-   */
   async skipGameWait() {
     await this.page.evaluate(() => {
       const win = window as any;
@@ -123,7 +89,6 @@ export class CheckersPage {
       const board = win.board;
       const draw = win.draw;
 
-      // Helper function *inside* evaluate
       function getImgName(piece: number, i: number, j: number): string {
         if (piece === 1) return 'you1.gif';
         if (piece === -1) return 'me1.gif';
@@ -153,36 +118,22 @@ export class CheckersPage {
       }
     }, piecesForGame);
 
-    // Always ensure it's our turn after setting state
     await this.skipGameWait();
   }
 
-
-  // --- 4. State Getters (For Assertions) ---
-
-  /**
-   * Gets the text from the main message bar.
-   */
   async getMessageText(): Promise<string> {
     return await this.messageLocator.textContent() || "";
   }
 
-  /**
-   * Reads the game's internal 'board' array directly.
-   */
   async getLogicalBoardState(): Promise<LogicalBoard> {
     const boardState = await this.page.evaluate(() => {
       const win = window as any;
-      return win.board; // This is the game's 2D array
+      return win.board;
     });
     return boardState as LogicalBoard;
   }
 
-  /**
-   * Gets the visual state of the board by checking image sources.
-   */
   async getVisualBoardState(): Promise<string[][]> {
-    // ... (This function remains unchanged)
     const visualState = await this.page.evaluate(() => {
       const images = document.querySelectorAll('#board img');
       const visualBoard: { [key: string]: string } = {};
