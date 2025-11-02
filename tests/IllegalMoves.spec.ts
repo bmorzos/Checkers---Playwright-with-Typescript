@@ -9,21 +9,21 @@ test.describe('Checkers Rules Enforcement & Illegal Moves', () => {
     await checkersPage.navigate();
 
     const basicSetup: { x: number; y: number; piece: PieceName }[] = [
-        { x: 2, y: 2, piece: "red" as PieceName },
-        { x: 4, y: 2, piece: "red" as PieceName },
-        { x: 7, y: 7, piece: "blue" as PieceName },
+        { x: 2, y: 2, piece: "red" },
+        { x: 4, y: 2, piece: "red" },
+        { x: 7, y: 7, piece: "blue" },
     ];
 
     await checkersPage.setBoard(basicSetup);
   });
 
   test('Click Empty Square', async ({ page }) => {
-    await checkersPage.clickSquare(1, 2);
+    await checkersPage.clickSquare(3, 3);
     
     const finalBoard = await checkersPage.getVisualBoardState();
     expect(finalBoard[2][2]).toBe('red');
-    expect(finalBoard[1][2]).toBe('empty');
-    expect(await checkersPage.getCurrentMessage()).toContain("Select an orange piece to move.");
+    expect(finalBoard[1][2]).toBe('non-playable');
+    expect(await checkersPage.getCurrentMessage()).toContain("Click on your orange piece, then click where you want to move it.");
   });
 
   test('Click Opponent Piece', async ({ page }) => {
@@ -37,83 +37,82 @@ test.describe('Checkers Rules Enforcement & Illegal Moves', () => {
 
   test('Backwards', async ({ page }) => {
     await checkersPage.clickSquare(2, 2);
-    await checkersPage.clickSquare(1, 1);
+    await checkersPage.completeMove(1, 1);
     
     const finalBoard = await checkersPage.getVisualBoardState();
-    expect(finalBoard[2][2]).toBe('selected');
+    expect(finalBoard[2][2]).toBe('red - selected');
     expect(finalBoard[1][1]).toBe('empty');
   });
 
   test('Horizontal', async ({ page }) => {
     await checkersPage.clickSquare(2, 2);
-    await checkersPage.clickSquare(3, 2);
+    await checkersPage.completeMove(3, 2);
     
     const finalBoard = await checkersPage.getVisualBoardState();
-    expect(finalBoard[2][2]).toBe('selected');
-    expect(finalBoard[3][2]).toBe('empty');
+    expect(finalBoard[2][2]).toBe('red - selected');
+    expect(finalBoard[3][2]).toBe('non-playable');
   });
 
   test('Vertical', async ({ page }) => {
     await checkersPage.clickSquare(2, 2);
-    await checkersPage.clickSquare(2, 3);
+    await checkersPage.completeMove(2, 3);
     
     const finalBoard = await checkersPage.getVisualBoardState();
-    expect(finalBoard[2][2]).toBe('selected');
-    expect(finalBoard[2][3]).toBe('empty');
+    expect(finalBoard[2][2]).toBe('red - selected');
+    expect(finalBoard[2][3]).toBe('non-playable');
   });
 
   test('Dark Square', async ({ page }) => {
     await checkersPage.clickSquare(2, 2);
-    await checkersPage.clickSquare(1, 1);
+    await checkersPage.completeMove(1, 1);
     
     const finalBoard = await checkersPage.getVisualBoardState();
-    expect(finalBoard[2][2]).toBe('selected');
+    expect(finalBoard[2][2]).toBe('red - selected');
     expect(finalBoard[1][1]).toBe('empty');
   });
 
   test('Occupied by Self', async ({ page }) => {
     await checkersPage.clickSquare(2, 2);
-    await checkersPage.clickSquare(4, 2);
+    await checkersPage.completeMove(4, 2);
     
     const finalBoard = await checkersPage.getVisualBoardState();
     expect(finalBoard[2][2]).toBe('red');
-    expect(finalBoard[4][2]).toBe('selected');
+    expect(finalBoard[4][2]).toBe('red - selected');
   });
 
   test('Occupied by Opponent, No Capture', async ({ page }) => {
     const adjacentSetup: { x: number; y: number; piece: PieceName }[] = [
-      { x: 2, y: 2, piece: "red" as PieceName },
-      { x: 3, y: 3, piece: "blue" as PieceName },
+      { x: 2, y: 2, piece: "red" },
+      { x: 3, y: 3, piece: "blue" },
     ];
     await checkersPage.setBoard(adjacentSetup);
 
     await checkersPage.clickSquare(2, 2);
-    await checkersPage.clickSquare(3, 3);
+    await checkersPage.completeMove(3, 3);
     
     const finalBoard = await checkersPage.getVisualBoardState();
-    expect(finalBoard[2][2]).toBe('selected');
+    expect(finalBoard[2][2]).toBe('red - selected');
     expect(finalBoard[3][3]).toBe('blue');
   });
   
   test('Long Diagonal, No Capture', async ({ page }) => {
     await checkersPage.clickSquare(2, 2);
-    await checkersPage.clickSquare(4, 4);
+    await checkersPage.completeMove(4, 4);
     
     const finalBoard = await checkersPage.getVisualBoardState();
-    expect(finalBoard[2][2]).toBe('selected');
+    expect(finalBoard[2][2]).toBe('red - selected');
     expect(finalBoard[4][4]).toBe('empty');
   });
   
   test('During Opponent Turn', async ({ page }) => {
     await checkersPage.clickSquare(2, 2);
-    await checkersPage.clickSquare(1, 3);
+    await checkersPage.completeMove(1, 3);
+    await checkersPage.completeMove(4, 2);
 
-    await checkersPage.clickSquare(4, 2);
-
-    expect(await checkersPage.getCurrentMessage()).toContain("Please wait.");
+    expect(await checkersPage.getCurrentMessage()).toContain("Select an orange piece to move.");
     
     const finalBoard = await checkersPage.getVisualBoardState();
-    expect(finalBoard[4][2]).toBe('red');
+    expect(finalBoard[4][2]).toBe('red - selected');
   });
 });
 

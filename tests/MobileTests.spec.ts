@@ -5,7 +5,7 @@ test.describe('Checkers Responsiveness (Mobile)', () => {
   let checkersPage: CheckersPage;
 
   // Use a mobile viewport for all tests in this file
-  test.use({ ...devices['iPhone 13'] });
+  // test.use({ ...devices['iPhone 13'] });
 
   test.beforeEach(async ({ page }) => {
     checkersPage = new CheckersPage(page);

@@ -10,26 +10,20 @@ export class CheckersPage {
     "blueKing": -1.1,
   };
 
-  private reversePieceMap: { [key: number]: string } = {
-    1: "red",
-    "-1": "blue",
-    1.1: "redKing",
-    "-1.1": "blueKing",
-    0: "empty"
-  };
-  
   constructor(private page: Page) {}
 
   async navigate() {
     await this.page.goto('https://www.gamesforthebrain.com/game/checkers/');
+    await this.page.locator('#adSideBanner').evaluate(element => element.remove()); // Remove ad banner for testing
   }
 
   async clickSquare(x: number, y: number) {
     await this.page.locator(`img[name="space${x}${y}"]`).click();
   }
 
-  async getBoardState(): Promise<any[][]> {
-    return await this.page.evaluate(() => (window as any).board);
+  async completeMove(x: number, y: number) {
+    await this.clickSquare(x, y);
+    await this.skipGameWait();
   }
 
   async skipGameWait() {
@@ -88,19 +82,19 @@ export class CheckersPage {
   }
 
   async getVisualBoardState(): Promise<string[][]> {
-    const dataBoard = await this.getReadableBoardState();
-
     const visualState = await this.page.evaluate(() => {
       const images = document.querySelectorAll('#board img');
       const visualBoard: { [key: string]: string } = {};
-      
+
       images.forEach(img => {
         const name = img.getAttribute('name'); // e.g., "space22"
         const src = img.getAttribute('src') || '';
         
         let state = 'unknown';
-        if (src.includes('you2.gif') || src.includes('me2.gif')) {
-          state = 'selected';
+        if (src.includes('you2.gif')) {
+          state = 'red - selected';
+        } else if (src.includes('me2.gif')) {
+          state = 'blue - selected';
         } else if (src.includes('you2k.gif')) {
           state = 'redKing - selected';
         } else if (src.includes('me2k.gif')) {
@@ -118,7 +112,7 @@ export class CheckersPage {
         } else if (src.includes('black.gif')) {
           state = 'non-playable';
         }
-        
+
         if (name) {
           visualBoard[name] = state;
         }
@@ -126,30 +120,19 @@ export class CheckersPage {
       return visualBoard;
     });
 
-    // 3. Merge the data board with the visual "selected" state
-    for (let j = 0; j < 8; j++) { // y-axis
-      for (let i = 0; i < 8; i++) { // x-axis
+    const finalBoard = Array(8).fill(null).map(() => Array(8).fill("unknown"));
+
+    for (let j = 0; j < 8; j++) {
+      for (let i = 0; i < 8; i++) {
         const name = `space${i}${j}`;
-        if (visualState[name] === 'selected') {
-          dataBoard[i][j] = 'selected';
+        const vState = visualState[name];
+
+        if (vState) {
+          finalBoard[i][j] = vState;
         }
       }
     }
-    
-    return dataBoard;
-  }
 
-  async getReadableBoardState(): Promise<string[][]> {
-    const numericBoard = await this.getBoardState();
-    const readableBoard = Array(8).fill(null).map(() => Array(8).fill("empty"));
-
-    for (let i = 0; i < 8; i++) {
-        for (let j = 0; j < 8; j++) {
-            const piece = numericBoard[i][j];
-            readableBoard[i][j] = this.reversePieceMap[piece] || 'empty';
-        }
-    }
-    return readableBoard;
+    return finalBoard;
   }
 }
-
