@@ -1,4 +1,4 @@
-import { Page, Locator } from '@playwright/test';
+import { Page, Locator, expect } from '@playwright/test';
 
 export type PieceName = "red" | "blue" | "redKing" | "blueKing";
 export type Coords = { x: number; y: number };
@@ -22,7 +22,10 @@ export class MoveInProgress {
 }
 
 export class CheckersPage {
-  private readonly messageLocator: Locator;
+  readonly messageLocator: Locator;
+  readonly pageHeader: Locator;
+  readonly rulesLink: Locator;
+  readonly restartLink: Locator;
 
   private pieceMap: { [key in PieceName]: number } = {
     "red": 1,
@@ -31,23 +34,22 @@ export class CheckersPage {
     "blueKing": -1.1,
   };
 
+  readonly rulesLinkHref: string = 'https://en.wikipedia.org/wiki/English_draughts#Starting_position';
+
   constructor(private page: Page) {
     this.messageLocator = this.page.locator('#message');
+    this.pageHeader = this.page.getByRole('heading', { name: 'Checkers' });
+    this.rulesLink = this.page.getByRole('link', { name: 'Rules' });
+    this.restartLink = this.page.getByRole('link', { name: 'Restart...' });
   }
 
   async navigate() {
     await this.page.goto('https://www.gamesforthebrain.com/game/checkers/');
-    await this.page.locator('#adSideBanner').evaluate(element => {
-      (element as HTMLElement).style.display = 'none';
-    });
+    await expect(this.messageLocator).toBeVisible();
   }
 
   async clickSquare(x: number, y: number) {
     await this.page.locator(`img[name="space${x}${y}"]`).click();
-  }
-  
-  async clickRestart() {
-    await this.page.getByRole('link', { name: 'Restart...' }).click();
   }
 
   async selectPiece(coords: Coords) {

@@ -1,28 +1,25 @@
-import { test, expect, devices } from '@playwright/test';
-import { CheckersPage, PieceName } from '../pages/CheckersPage';
+import { test, expect } from '../fixtures/Checkers.fixture';
+import { PieceName, PieceState } from '../pages/CheckersPage';
+import { devices } from '@playwright/test';
+
+// Use a mobile viewport for all tests in this file
+test.use({ ...devices['iPhone 13'] });
 
 test.describe.configure({ mode: 'parallel' });
 
 test.describe('Checkers Responsiveness (Mobile)', () => {
-  let checkersPage: CheckersPage;
 
-  // Use a mobile viewport for all tests in this file
-  // test.use({ ...devices['iPhone 13'] });
-
-  test.beforeEach(async ({ page }) => {
-    checkersPage = new CheckersPage(page);
-    await checkersPage.navigate();
+  test('Mobile - Render', async ({ checkersPage}) => {
+    await expect(checkersPage.pageHeader).toBeVisible();
+    await expect(checkersPage.messageLocator).toBeVisible();
+    await expect(checkersPage.restartLink).toBeVisible();
   });
 
-  test('Mobile - Render', async ({ page }) => {
+  test('Mobile - Play', async ({ checkersPage}) => {
     
   });
 
-  test('Mobile - Play', async ({ page }) => {
-    
-  });
-
-  test('Mobile - Restart', async ({ page }) => {
+  test('Mobile - Restart', async ({ checkersPage}) => {
     
   });
 });

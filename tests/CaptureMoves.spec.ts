@@ -1,24 +1,17 @@
-import { test, expect } from '@playwright/test';
-import { CheckersPage, PieceName, PieceState } from '../pages/CheckersPage';
+import { test, expect } from '../fixtures/Checkers.fixture';
+import { PieceName, PieceState } from '../pages/CheckersPage';
 
 test.describe.configure({ mode: 'parallel' });
 
 test.describe('Checkers Capture Mechanics', () => {
-  let checkersPage: CheckersPage;
 
-  test.beforeEach(async ({ page }) => {
-    checkersPage = new CheckersPage(page);
-    await checkersPage.navigate();
-  });
-
-  test('Simple Capture', async ({ page }) => {
+  test('Simple Capture', async ({ checkersPage }) => {
     const setup: { x: number; y: number; piece: PieceName }[] = [
       { x: 2, y: 2, piece: "red" },
       { x: 3, y: 3, piece: "blue" },
       { x: 7, y: 7, piece: "blue" },
     ];
     await checkersPage.setBoard(setup);
-
     await checkersPage.movePiece({ x: 2, y: 2 }, { x: 4, y: 4 });
 
     const currentBoard = await checkersPage.getLogicalBoardState();
@@ -29,7 +22,7 @@ test.describe('Checkers Capture Mechanics', () => {
     expect(await checkersPage.getMessageText()).toContain("Select an orange piece to move.");
   });
 
-  test('Multi-Jump Sequence', async ({ page }) => {
+  test('Multi-Jump Sequence', async ({ checkersPage }) => {
     const setup: { x: number; y: number; piece: PieceName }[] = [
       { x: 2, y: 2, piece: "red" },
       { x: 3, y: 3, piece: "blue" },
@@ -37,7 +30,6 @@ test.describe('Checkers Capture Mechanics', () => {
       { x: 7, y: 7, piece: "blue" },
     ];
     await checkersPage.setBoard(setup);
-
     const move = await checkersPage.startMove({ x: 2, y: 2 });
     await move.jumpTo({ x: 4, y: 4 });
 
@@ -53,7 +45,7 @@ test.describe('Checkers Capture Mechanics', () => {
     expect(currentBoard[6][6]).toBe(PieceState.Red);
   });
 
-  test('Mandatory Multi-Jump Continuation - Other Piece', async ({ page }) => {
+  test('Mandatory Multi-Jump Continuation - Other Piece', async ({ checkersPage }) => {
     const setup: { x: number; y: number; piece: PieceName }[] = [
       { x: 2, y: 2, piece: "red" },
       { x: 3, y: 3, piece: "blue" },
@@ -61,9 +53,7 @@ test.describe('Checkers Capture Mechanics', () => {
       { x: 0, y: 0, piece: "red" },
     ];
     await checkersPage.setBoard(setup);
-
     await checkersPage.movePiece({ x: 2, y: 2 }, { x: 4, y: 4 });
-    
     await checkersPage.selectPiece({ x: 0, y: 0 });
 
     const currentBoard = await checkersPage.getVisualBoardState();
@@ -72,16 +62,14 @@ test.describe('Checkers Capture Mechanics', () => {
     expect(currentBoard[2][2]).toBe("empty");
   });
 
-  test('Multi-Jump Continuation - Stay Still', async ({ page }) => {
+  test('Multi-Jump Continuation - Stay Still', async ({ checkersPage }) => {
     const setup: { x: number; y: number; piece: PieceName }[] = [
       { x: 2, y: 2, piece: "red" },
       { x: 3, y: 3, piece: "blue" },
       { x: 5, y: 5, piece: "blue" },
     ];
     await checkersPage.setBoard(setup);
-
     await checkersPage.movePiece({ x: 2, y: 2 }, { x: 4, y: 4 });
-
     await checkersPage.clickSquare(4, 4);
     
     expect(await checkersPage.getMessageText()).toContain("You lose. Game over.");

@@ -1,33 +1,49 @@
-import { test, expect } from '@playwright/test';
-import { CheckersPage, PieceName, PieceState } from '../pages/CheckersPage';
+import { test, expect } from '../fixtures/Checkers.fixture';
+import { PieceName, PieceState } from '../pages/CheckersPage';
 
 test.describe.configure({ mode: 'parallel' });
 
 test.describe('Checkers Game State & UI Feedback', () => {
-  let checkersPage: CheckersPage;
 
-  test.beforeEach(async ({ page }) => {
-    checkersPage = new CheckersPage(page);
-    await checkersPage.navigate();
+  test('Initial board state is correct', async ({ checkersPage, initialBoardState }) => {
+    const actualBoard = await checkersPage.getLogicalBoardState();
+    expect(actualBoard).toEqual(initialBoardState);
+    await expect(checkersPage.pageHeader).toBeVisible();
+    await expect(checkersPage.messageLocator).toBeVisible();
+    await expect(checkersPage.restartLink).toBeVisible();
+    await expect(checkersPage.rulesLink).toBeVisible();
+    await expect(checkersPage.rulesLink).toHaveAttribute(
+      'href',
+      checkersPage.rulesLinkHref
+    );
   });
 
-  test('Restart Button - Mid-Game', async ({ page }) => {
+  test('Restart Button - Mid-Game', async ({ checkersPage, initialBoardState }) => {
+    await checkersPage.movePiece({ x: 2, y: 2 }, { x: 3, y: 3 });
+    
+    const modifiedBoard = await checkersPage.getLogicalBoardState();
+    expect(modifiedBoard).not.toEqual(initialBoardState);
+
+    await checkersPage.restartLink.click();
+    await expect(checkersPage.messageLocator).toBeVisible();
+
+    const finalBoard = await checkersPage.getLogicalBoardState();
+    expect(finalBoard).toEqual(initialBoardState);
+  });
+
+  test('Computer Move Visual', async ({ checkersPage}) => {
     
   });
 
-  test('Computer Move Visual', async ({ page }) => {
+  test('Win Condition - Capture All', async ({ checkersPage}) => {
     
   });
 
-  test('Win Condition - Capture All', async ({ page }) => {
+  test('Loss Condition - No Pieces', async ({ checkersPage}) => {
     
   });
 
-  test('Loss Condition - No Pieces', async ({ page }) => {
-    
-  });
-
-  test('Loss Condition - No Moves', async ({ page }) => {
+  test('Loss Condition - No Moves', async ({ checkersPage}) => {
     
   });
 });
