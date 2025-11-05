@@ -125,4 +125,16 @@ test.describe('Kinging Mechanics', () => {
     expect(currentBoard[1][5]).toBe(PieceState.RedKing);
     expect(currentBoard[2][6]).toBe(PieceState.Empty);
   });
+
+  test.only('Computer gets Kinged', async ({ checkersPage}) => {
+    const setup: { x: number; y: number; piece: PieceState }[] = [
+      { x: 7, y: 1, piece: PieceState.Blue },
+      { x: 2, y: 2, piece: PieceState.Red },
+    ];
+    await checkersPage.setBoard(setup);
+    await checkersPage.movePiece({ x: 2, y: 2 }, { x: 3, y: 3 });
+    await checkersPage.waitForGlobalWait();
+    const currentBoard = await checkersPage.getLogicalBoardState();
+    expect(currentBoard[6][0]).toBe(PieceState.BlueKing);
+  });
 });
