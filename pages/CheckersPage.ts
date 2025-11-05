@@ -17,7 +17,6 @@ export class MoveInProgress {
 
   async jumpTo(to: Coords) {
     await this.checkersPage.clickSquare(to.x, to.y);
-    await this.checkersPage.skipGameWait();
   }
 }
 
@@ -44,12 +43,15 @@ export class CheckersPage {
   }
 
   async navigate() {
-    await this.page.goto('https://www.gamesforthebrain.com/game/checkers/');
-    await expect(this.messageLocator).toBeVisible();
+    await this.page.goto('/game/checkers/');
+  }
+
+  getSquareLocator(x: number, y: number): Locator {
+    return this.page.locator(`img[name="space${x}${y}"]`);
   }
 
   async clickSquare(x: number, y: number) {
-    await this.page.locator(`img[name="space${x}${y}"]`).click();
+    await this.getSquareLocator(x, y).click();
   }
 
   async selectPiece(coords: Coords) {
@@ -59,7 +61,6 @@ export class CheckersPage {
   async movePiece(from: Coords, to: Coords) {
     await this.selectPiece(from);
     await this.clickSquare(to.x, to.y);
-    await this.skipGameWait();
   }
 
   async startMove(from: Coords): Promise<MoveInProgress> {
@@ -67,17 +68,12 @@ export class CheckersPage {
     return new MoveInProgress(this);
   }
 
-  async skipGameWait() {
-    await this.page.evaluate(() => {
-      const win = window as any;
-      win.g_wait = false; // Stop any "computer is thinking" spinner
-      win.my_turn = true;  // Force it to be our turn
+  async waitForGlobalWait(): Promise<void> {
+    await this.page.waitForFunction(() => (window as any).g_wait === false, {
+      timeout: 3000
     });
   }
 
-  /**
-   * Injects a specific board state directly into the game logic.
-   */
   async setBoard(pieces: { x: number; y: number; piece: PieceName }[]) {
     
     const piecesForGame = pieces.map(p => ({
@@ -88,9 +84,55 @@ export class CheckersPage {
 
     await this.page.evaluate((piecesToPlace) => {
       const win = window as any;
-      const board = win.board;
-      const draw = win.draw;
+      const board = win.board; // This IS global
+      const draw = win.draw; // This IS global
 
+      // 1. Clear the logical board
+      for (let i = 0; i < 8; i++) {
+        board[i] = new Array(); // Ensure it's a new array
+        for (let j = 0; j < 8; j++) {
+          board[i][j] = 0;
+        }
+      }
+
+  
+      // This mimics the original Board() constructor and prevents AI crashes.
+      // We fill them with 0s to prevent 'integ(undefined)' which returns 'null'.
+      board[-2] = [0,0,0,0,0,0,0,0];
+      board[-1] = [0,0,0,0,0,0,0,0];
+      board[8] = [0,0,0,0,0,0,0,0];
+      board[9] = [0,0,0,0,0,0,0,0];
+
+
+      // 3. Set the pieces on the board. The AI reads this.
+      for (const p of piecesToPlace) {
+        board[p.x][p.y] = p.piece;
+      }
+
+      // 4. Redraw the visual board
+      for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+          const piece = board[i][j];
+          draw(i, j, getImgName(piece, i, j));
+        }
+      }
+
+      // 5. Reset all global state variables from the game's source code!
+      win.g_wait = false;
+      win.my_turn = true;
+      win.piece_toggled = false;
+      win.double_jump = false;
+      win.comp_move = false;
+      win.game_is_over = false;
+      win.safe_from = null;
+      win.safe_to = null;
+      win.toggler = null;
+      win.togglers = 0;
+      
+      // Also reset the UI feedback
+      win.document.getElementById('message').innerText = 'Select an orange piece to move.';
+
+      // Helper function (must be inside evaluate)
       function getImgName(piece: number, i: number, j: number): string {
         if (piece === 1) return 'you1.gif';
         if (piece === -1) return 'me1.gif';
@@ -99,29 +141,9 @@ export class CheckersPage {
         return ((i % 2) + j) % 2 === 0 ? 'gray.gif' : 'black.gif';
       }
 
-      // 1. Clear the logical board
-      for (let i = 0; i < 8; i++) {
-        for (let j = 0; j < 8; j++) {
-          board[i][j] = 0;
-        }
-      }
-
-      // 2. Set the pieces
-      for (const piece of piecesToPlace) {
-        board[piece.x][piece.y] = piece.piece;
-      }
-
-      // 3. Redraw the visual board to match
-      for (let i = 0; i < 8; i++) {
-        for (let j = 0; j < 8; j++) {
-          const piece = board[i][j];
-          draw(i, j, getImgName(piece, i, j));
-        }
-      }
     }, piecesForGame);
-
-    await this.skipGameWait();
   }
+
 
   async getMessageText(): Promise<string> {
     return await this.messageLocator.textContent() || "";
@@ -187,3 +209,5 @@ export class CheckersPage {
     return finalBoard;
   }
 }
+
+  

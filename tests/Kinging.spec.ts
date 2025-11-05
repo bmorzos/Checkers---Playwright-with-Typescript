@@ -82,6 +82,7 @@ test.describe('Kinging Mechanics', () => {
     await checkersPage.setBoard(setup);
     const move = await checkersPage.startMove({ x: 2, y: 2 });
     await move.jumpTo({ x: 4, y: 4 });
+    await checkersPage.waitForGlobalWait();
 
     let currentBoard = await checkersPage.getLogicalBoardState();
     expect(currentBoard[4][4]).toBe(PieceState.RedKing);

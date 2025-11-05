@@ -1,5 +1,4 @@
 import { test, expect } from '../fixtures/Checkers.fixture';
-import { PieceName, PieceState } from '../pages/CheckersPage';
 
 test.describe.configure({ mode: 'parallel' });
 
@@ -31,19 +30,20 @@ test.describe('Checkers Game State & UI Feedback', () => {
     expect(finalBoard).toEqual(initialBoardState);
   });
 
-  test('Computer Move Visual', async ({ checkersPage}) => {
+  test.skip('Computer Move Visual', async ({ checkersPage }) => {
     
   });
 
-  test('Win Condition - Capture All', async ({ checkersPage}) => {
+  test.skip('Win Condition - Capture All', async ({ checkersPage }) => {
     
   });
 
-  test('Loss Condition - No Pieces', async ({ checkersPage}) => {
+  test.skip('Loss Condition - No Pieces', async ({ checkersPage }) => {
     
   });
 
-  test('Loss Condition - No Moves', async ({ checkersPage}) => {
-    
+  test.skip('Loss Condition - No Moves', async ({ checkersPage }) => {
+
   });
+  
 });

@@ -1,5 +1,4 @@
 import { test, expect } from '../fixtures/Checkers.fixture';
-import { PieceName, PieceState } from '../pages/CheckersPage';
 import { devices } from '@playwright/test';
 
 // Use a mobile viewport for all tests in this file
@@ -15,11 +14,11 @@ test.describe('Checkers Responsiveness (Mobile)', () => {
     await expect(checkersPage.restartLink).toBeVisible();
   });
 
-  test('Mobile - Play', async ({ checkersPage}) => {
+  test.skip('Mobile - Play', async ({ checkersPage}) => {
     
   });
 
-  test('Mobile - Restart', async ({ checkersPage}) => {
+  test.skip('Mobile - Restart', async ({ checkersPage}) => {
     
   });
 });

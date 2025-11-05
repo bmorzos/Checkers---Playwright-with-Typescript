@@ -42,6 +42,7 @@ export const test = base.extend<MyFixtures>({
     });
     const checkersPage = new CheckersPage(page);
     await checkersPage.navigate();
+    await checkersPage.getSquareLocator(0, 0).waitFor();
     await use(checkersPage);
   },
 
