@@ -1,6 +1,5 @@
 import { Page, Locator, expect } from '@playwright/test';
 
-export type PieceName = "red" | "blue" | "redKing" | "blueKing";
 export type Coords = { x: number; y: number };
 export type LogicalBoard = number[][];
 
@@ -25,14 +24,6 @@ export class CheckersPage {
   readonly pageHeader: Locator;
   readonly rulesLink: Locator;
   readonly restartLink: Locator;
-
-  private pieceMap: { [key in PieceName]: number } = {
-    "red": 1,
-    "blue": -1,
-    "redKing": 1.1,
-    "blueKing": -1.1,
-  };
-
   readonly rulesLinkHref: string = 'https://en.wikipedia.org/wiki/English_draughts#Starting_position';
 
   constructor(private page: Page) {
@@ -41,6 +32,28 @@ export class CheckersPage {
     this.rulesLink = this.page.getByRole('link', { name: 'Rules' });
     this.restartLink = this.page.getByRole('link', { name: 'Restart...' });
   }
+
+  // Maps logical state numbers to their base image filename
+  private readonly pieceImageMap = {
+    [PieceState.Red]: 'you1.gif',
+    [PieceState.Blue]: 'me1.gif',
+    [PieceState.RedKing]: 'you1k.gif',
+    [PieceState.BlueKing]: 'me1k.gif',
+  };
+
+  // Maps all image filenames to the string state used in tests
+  private readonly visualStateMap: { [key: string]: string } = {
+    'you1.gif': 'red',
+    'me1.gif': 'blue',
+    'you1k.gif': 'redKing',
+    'me1k.gif': 'blueKing',
+    'you2.gif': 'red - selected',
+    'me2.gif': 'blue - selected',
+    'you2k.gif': 'redKing - selected',
+    'me2k.gif': 'blueKing - selected',
+    'gray.gif': 'empty',
+    'black.gif': 'non-playable',
+  };
 
   async navigate() {
     await this.page.goto('/game/checkers/');
@@ -60,7 +73,7 @@ export class CheckersPage {
 
   async movePiece(from: Coords, to: Coords) {
     await this.selectPiece(from);
-    await this.clickSquare(to.x, to.y);
+    await this.selectPiece(to);
   }
 
   async startMove(from: Coords): Promise<MoveInProgress> {
@@ -74,37 +87,29 @@ export class CheckersPage {
     });
   }
 
-  async setBoard(pieces: { x: number; y: number; piece: PieceName }[]) {
+  async setBoard(pieces: { x: number; y: number; piece: PieceState }[]) {
     
-    const piecesForGame = pieces.map(p => ({
-      x: p.x,
-      y: p.y,
-      piece: this.pieceMap[p.piece] || 0,
-    }));
-
-    await this.page.evaluate((piecesToPlace) => {
+    // Pass both the pieces and our new map into the browser context
+    await this.page.evaluate(({ piecesToPlace, imageMap }) => {
       const win = window as any;
       const board = win.board; // This IS global
       const draw = win.draw; // This IS global
 
       // 1. Clear the logical board
       for (let i = 0; i < 8; i++) {
-        board[i] = new Array(); // Ensure it's a new array
+        board[i] = new Array();
         for (let j = 0; j < 8; j++) {
           board[i][j] = 0;
         }
       }
-
   
-      // This mimics the original Board() constructor and prevents AI crashes.
-      // We fill them with 0s to prevent 'integ(undefined)' which returns 'null'.
+      // This mimics the original Board() constructor...
       board[-2] = [0,0,0,0,0,0,0,0];
       board[-1] = [0,0,0,0,0,0,0,0];
       board[8] = [0,0,0,0,0,0,0,0];
       board[9] = [0,0,0,0,0,0,0,0];
 
-
-      // 3. Set the pieces on the board. The AI reads this.
+      // 3. Set the pieces on the board.
       for (const p of piecesToPlace) {
         board[p.x][p.y] = p.piece;
       }
@@ -117,7 +122,7 @@ export class CheckersPage {
         }
       }
 
-      // 5. Reset all global state variables from the game's source code!
+      // 5. Reset all global state variables...
       win.g_wait = false;
       win.my_turn = true;
       win.piece_toggled = false;
@@ -128,25 +133,16 @@ export class CheckersPage {
       win.safe_to = null;
       win.toggler = null;
       win.togglers = 0;
-      
-      // Also reset the UI feedback
       win.document.getElementById('message').innerText = 'Select an orange piece to move.';
 
-      // Helper function (must be inside evaluate)
       function getImgName(piece: number, i: number, j: number): string {
-        if (piece === 1) return 'you1.gif';
-        if (piece === -1) return 'me1.gif';
-        if (piece === 1.1) return 'you1k.gif';
-        if (piece === -1.1) return 'me1k.gif';
+        const imageName = (imageMap as any)[piece];
+        if (imageName) return imageName;
+
         return ((i % 2) + j) % 2 === 0 ? 'gray.gif' : 'black.gif';
       }
 
-    }, piecesForGame);
-  }
-
-
-  async getMessageText(): Promise<string> {
-    return await this.messageLocator.textContent() || "";
+    }, { piecesToPlace: pieces, imageMap: this.pieceImageMap });
   }
 
   async getLogicalBoardState(): Promise<LogicalBoard> {
@@ -157,56 +153,34 @@ export class CheckersPage {
     return boardState as LogicalBoard;
   }
 
+  private getVisualStateFromSrc(src: string | null): string {
+    if (!src) return 'unknown';
+
+    if (src.includes('you2.gif')) return 'red - selected';
+    if (src.includes('me2.gif')) return 'blue - selected';
+    if (src.includes('you2k.gif')) return 'redKing - selected';
+    if (src.includes('me2k.gif')) return 'blueKing - selected';
+    if (src.includes('you1k.gif')) return 'redKing';
+    if (src.includes('me1k.gif')) return 'blueKing';
+    if (src.includes('you1.gif')) return 'red';
+    if (src.includes('me1.gif')) return 'blue';
+    if (src.includes('gray.gif')) return 'empty';
+    if (src.includes('black.gif')) return 'non-playable';
+    
+    return 'unknown';
+  }
+
   async getVisualBoardState(): Promise<string[][]> {
-    const visualState = await this.page.evaluate(() => {
-      const images = document.querySelectorAll('#board img');
-      const visualBoard: { [key: string]: string } = {};
+    const boardState = Array(8).fill(null).map(() => Array(8).fill("unknown"));
 
-      images.forEach(img => {
-        const name = img.getAttribute('name'); // e.g., "space22"
-        const src = img.getAttribute('src') || '';
-        
-        let state = 'unknown';
-        if (src.includes('you2.gif')) {
-          state = 'red - selected';
-        } else if (src.includes('me2.gif')) {
-          state = 'blue - selected';
-        } else if (src.includes('you2k.gif')) {
-          state = 'redKing - selected';
-        } else if (src.includes('me2k.gif')) {
-          state = 'blueKing - selected';
-        } else if (src.includes('you1k.gif')) {
-          state = 'redKing';
-        } else if (src.includes('me1k.gif')) {
-          state = 'blueKing';
-        } else if (src.includes('you1.gif')) {
-          state = 'red';
-        } else if (src.includes('me1.gif')) {
-          state = 'blue';
-        } else if (src.includes('gray.gif')) {
-          state = 'empty';
-        } else if (src.includes('black.gif')) {
-          state = 'non-playable';
-        }
-
-        if (name) {
-          visualBoard[name] = state;
-        }
-      });
-      return visualBoard;
-    });
-
-    // Re-map the flat object to a 2D array
-    const finalBoard = Array(8).fill(null).map(() => Array(8).fill("unknown"));
-    for (let j = 0; j < 8; j++) {
-      for (let i = 0; i < 8; i++) {
-        const name = `space${i}${j}`;
-        if (visualState[name]) {
-          finalBoard[i][j] = visualState[name];
-        }
+    for (let i = 0; i < 8; i++) {
+      for (let j = 0; j < 8; j++) {
+        const imageSrc = await this.getSquareLocator(i, j).getAttribute('src');
+        boardState[i][j] = this.getVisualStateFromSrc(imageSrc);
       }
     }
-    return finalBoard;
+    
+    return boardState;
   }
 }
 

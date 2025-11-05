@@ -1,14 +1,14 @@
 import { test, expect } from '../fixtures/Checkers.fixture';
-import { PieceName, PieceState } from '../pages/CheckersPage';
+import { PieceState } from '../pages/CheckersPage';
 
 test.describe.configure({ mode: 'parallel' });
 
 test.describe('Kinging Mechanics', () => {
 
   test('Become King - Simple Move', async ({ checkersPage}) => {
-    const setup: { x: number; y: number; piece: PieceName }[] = [
-      { x: 2, y: 6, piece: "red" },
-      { x: 7, y: 7, piece: "blue" },
+    const setup: { x: number; y: number; piece: PieceState }[] = [
+      { x: 2, y: 6, piece: PieceState.Red },
+      { x: 7, y: 7, piece: PieceState.Blue },
     ];
     await checkersPage.setBoard(setup);
     await checkersPage.movePiece({ x: 2, y: 6 }, { x: 1, y: 7 });
@@ -18,10 +18,10 @@ test.describe('Kinging Mechanics', () => {
   });
 
   test('Become King - Capture Move', async ({ checkersPage}) => {
-    const setup: { x: number; y: number; piece: PieceName }[] = [
-      { x: 1, y: 5, piece: "red" },
-      { x: 2, y: 6, piece: "blue" },
-      { x: 7, y: 7, piece: "blue" },
+    const setup: { x: number; y: number; piece: PieceState }[] = [
+      { x: 1, y: 5, piece: PieceState.Red },
+      { x: 2, y: 6, piece: PieceState.Blue },
+      { x: 7, y: 7, piece: PieceState.Blue },
     ];
     await checkersPage.setBoard(setup);
     await checkersPage.movePiece({ x: 1, y: 5 }, { x: 3, y: 7 });
@@ -32,9 +32,9 @@ test.describe('Kinging Mechanics', () => {
   });
 
   test('King Move - Backward-Left', async ({ checkersPage}) => {
-    const setup: { x: number; y: number; piece: PieceName }[] = [
-      { x: 2, y: 2, piece: "redKing" },
-      { x: 7, y: 7, piece: "blue" },
+    const setup: { x: number; y: number; piece: PieceState }[] = [
+      { x: 2, y: 2, piece: PieceState.RedKing },
+      { x: 7, y: 7, piece: PieceState.Blue },
     ];
     await checkersPage.setBoard(setup);
     await checkersPage.movePiece({ x: 2, y: 2 }, { x: 3, y: 1 });
@@ -45,9 +45,9 @@ test.describe('Kinging Mechanics', () => {
   });
 
   test('King Move - Backward-Right', async ({ checkersPage}) => {
-    const setup: { x: number; y: number; piece: PieceName }[] = [
-      { x: 2, y: 2, piece: "redKing" },
-      { x: 7, y: 7, piece: "blue" },
+    const setup: { x: number; y: number; piece: PieceState }[] = [
+      { x: 2, y: 2, piece: PieceState.RedKing },
+      { x: 7, y: 7, piece: PieceState.Blue },
     ];
     await checkersPage.setBoard(setup);
     await checkersPage.movePiece({ x: 2, y: 2 }, { x: 1, y: 1 });
@@ -58,10 +58,10 @@ test.describe('Kinging Mechanics', () => {
   });
 
   test('King Capture - Backward', async ({ checkersPage}) => {
-    const setup: { x: number; y: number; piece: PieceName }[] = [
-      { x: 2, y: 2, piece: "redKing" },
-      { x: 1, y: 1, piece: "blue" },
-      { x: 7, y: 7, piece: "blue" },
+    const setup: { x: number; y: number; piece: PieceState }[] = [
+      { x: 2, y: 2, piece: PieceState.RedKing },
+      { x: 1, y: 1, piece: PieceState.Blue },
+      { x: 7, y: 7, piece: PieceState.Blue },
     ];
     await checkersPage.setBoard(setup);
     await checkersPage.movePiece({ x: 2, y: 2 }, { x: 0, y: 0 });
@@ -73,11 +73,11 @@ test.describe('Kinging Mechanics', () => {
   });
 
   test('King Multi-Jump - Mixed Direction', async ({ checkersPage}) => {
-    const setup: { x: number; y: number; piece: PieceName }[] = [
-      { x: 2, y: 2, piece: "redKing" },
-      { x: 3, y: 3, piece: "blue" },
-      { x: 5, y: 3, piece: "blue" },
-      { x: 7, y: 7, piece: "blue" },
+    const setup: { x: number; y: number; piece: PieceState }[] = [
+      { x: 2, y: 2, piece: PieceState.RedKing },
+      { x: 3, y: 3, piece: PieceState.Blue },
+      { x: 5, y: 3, piece: PieceState.Blue },
+      { x: 7, y: 7, piece: PieceState.Blue },
     ];
     await checkersPage.setBoard(setup);
     const move = await checkersPage.startMove({ x: 2, y: 2 });
@@ -87,7 +87,7 @@ test.describe('Kinging Mechanics', () => {
     let currentBoard = await checkersPage.getLogicalBoardState();
     expect(currentBoard[4][4]).toBe(PieceState.RedKing);
     expect(currentBoard[3][3]).toBe(PieceState.Empty);
-    expect(await checkersPage.getMessageText()).toContain("Complete the double jump or click on your piece to stay still.");
+    await expect(checkersPage.messageLocator).toContainText("Complete the double jump or click on your piece to stay still.");
     
     await move.jumpTo({ x: 6, y: 2 });
 
@@ -97,11 +97,11 @@ test.describe('Kinging Mechanics', () => {
   });
 
   test.fail('Kinging Mid-Multi-Jump', async ({ checkersPage}) => {
-    const setup: { x: number; y: number; piece: PieceName }[] = [
-      { x: 5, y: 5, piece: "red" },
-      { x: 4, y: 6, piece: "blue" },
-      { x: 2, y: 6, piece: "blue" }, // The second piece to be jumped
-      { x: 7, y: 7, piece: "blue" }, // Extra piece
+    const setup: { x: number; y: number; piece: PieceState }[] = [
+      { x: 5, y: 5, piece: PieceState.Red },
+      { x: 4, y: 6, piece: PieceState.Blue },
+      { x: 2, y: 6, piece: PieceState.Blue }, // The second piece to be jumped
+      { x: 7, y: 7, piece: PieceState.Blue }, // Extra piece
     ];
     await checkersPage.setBoard(setup);
     const move = await checkersPage.startMove({ x: 5, y: 5 });
@@ -110,8 +110,8 @@ test.describe('Kinging Mechanics', () => {
     let currentBoard = await checkersPage.getLogicalBoardState();
     expect(currentBoard[3][7]).toBe(PieceState.RedKing);
     expect(currentBoard[4][6]).toBe(PieceState.Empty);
-    
-    expect(await checkersPage.getMessageText()).toContain(
+
+    await expect(checkersPage.messageLocator).toContainText(
       "Complete the double jump or click on your piece to stay still."
     );
     

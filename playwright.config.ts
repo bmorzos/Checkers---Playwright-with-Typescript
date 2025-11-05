@@ -36,41 +36,41 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: /.*MobileTests.spec.ts/,
       use: {
         ...devices['Desktop Chrome'],
-        baseURL: 'https://www.gamesforthebrain.com',
        },
     },
 
     {
       name: 'firefox',
+      testIgnore: /.*MobileTests.spec.ts/,
       use: { 
         ...devices['Desktop Firefox'],
-        baseURL: 'https://www.gamesforthebrain.com',
         },
     },
 
     {
       name: 'webkit',
+      testIgnore: /.*MobileTests.spec.ts/,
       use: { 
         ...devices['Desktop Safari'],
-        baseURL: 'https://www.gamesforthebrain.com',
        },
     },
 
     /* Test against mobile viewports. */
     {
       name: 'Mobile Chrome',
+      testMatch: /.*MobileTests.spec.ts/,
       use: { 
         ...devices['Pixel 9'],
-        baseURL: 'https://www.gamesforthebrain.com',
        },
     },
     {
       name: 'Mobile Safari',
+      testMatch: /.*MobileTests.spec.ts/,
       use: { 
         ...devices['iPhone 12'],
-        baseURL: 'https://www.gamesforthebrain.com',
        },
     },
 

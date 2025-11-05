@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/Checkers.fixture';
-import { PieceName, PieceState } from '../pages/CheckersPage';
+import { PieceState } from '../pages/CheckersPage';
 
 test.describe.configure({ mode: 'parallel' });
 
@@ -36,7 +36,7 @@ test.describe('Checkers Basic Mechanics', () => {
     expect(finalBoard[2][2]).toBe(PieceState.Empty);
     expect(finalBoard[3][3]).toBe(PieceState.Red);
 
-    expect(await basicBoardPage.getMessageText()).toContain('Select an orange piece to move.');
+    await expect(basicBoardPage.messageLocator).toContainText('Select an orange piece to move.');
   });
 
   test('Valid Forward-Right Move', async ({ basicBoardPage }) => {
@@ -46,6 +46,6 @@ test.describe('Checkers Basic Mechanics', () => {
     expect(finalBoard[2][2]).toBe(PieceState.Empty);
     expect(finalBoard[1][3]).toBe(PieceState.Red);
 
-    expect(await basicBoardPage.getMessageText()).toContain('Select an orange piece to move.');
+    await expect(basicBoardPage.messageLocator).toContainText('Select an orange piece to move.');
   });
 });

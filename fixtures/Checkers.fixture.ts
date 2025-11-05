@@ -1,5 +1,6 @@
 import { test as base } from '@playwright/test';
-import { CheckersPage, PieceName } from '../pages/CheckersPage';
+import { CheckersPage } from '../pages/CheckersPage';
+import { PieceState } from '../pages/CheckersPage';
 
 type MyFixtures = {
   checkersPage: CheckersPage;
@@ -7,10 +8,10 @@ type MyFixtures = {
   initialBoardState: number[][];
 };
 
-const basicSetup: { x: number; y: number; piece: PieceName }[] = [
-  { x: 2, y: 2, piece: "red" },
-  { x: 4, y: 2, piece: "red" },
-  { x: 7, y: 7, piece: "blue" },
+const basicSetup: { x: number; y: number; piece: PieceState }[] = [
+  { x: 2, y: 2, piece: PieceState.Red },
+  { x: 4, y: 2, piece: PieceState.Red },
+  { x: 7, y: 7, piece: PieceState.Blue },
 ];
 
 const initialBoardState: number[][] = [

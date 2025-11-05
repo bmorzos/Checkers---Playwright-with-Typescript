@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/Checkers.fixture';
-import { PieceName, PieceState } from '../pages/CheckersPage';
+import { PieceState } from '../pages/CheckersPage';
 
 const COMPUTER_THINK_TIME = 10000;
 
@@ -8,10 +8,10 @@ test.describe.configure({ mode: 'parallel' });
 test.describe('Checkers Capture Mechanics', () => {
 
   test('Simple Capture', async ({ checkersPage }) => {
-    const setup: { x: number; y: number; piece: PieceName }[] = [
-      { x: 2, y: 2, piece: "red" },
-      { x: 3, y: 3, piece: "blue" },
-      { x: 7, y: 7, piece: "blue" },
+    const setup: { x: number; y: number; piece: PieceState }[] = [
+      { x: 2, y: 2, piece: PieceState.Red },
+      { x: 3, y: 3, piece: PieceState.Blue },
+      { x: 7, y: 7, piece: PieceState.Blue },
     ];
     await checkersPage.setBoard(setup);
     await checkersPage.movePiece({ x: 2, y: 2 }, { x: 4, y: 4 });
@@ -28,11 +28,11 @@ test.describe('Checkers Capture Mechanics', () => {
   });
 
   test('Multi-Jump Sequence', async ({ checkersPage }) => {
-    const setup: { x: number; y: number; piece: PieceName }[] = [
-      { x: 2, y: 2, piece: "red" },
-      { x: 3, y: 3, piece: "blue" },
-      { x: 5, y: 5, piece: "blue" },
-      { x: 7, y: 7, piece: "blue" },
+    const setup: { x: number; y: number; piece: PieceState }[] = [
+      { x: 2, y: 2, piece: PieceState.Red },
+      { x: 3, y: 3, piece: PieceState.Blue },
+      { x: 5, y: 5, piece: PieceState.Blue },
+      { x: 7, y: 7, piece: PieceState.Blue },
     ];
     await checkersPage.setBoard(setup);
     const move = await checkersPage.startMove({ x: 2, y: 2 });
@@ -60,12 +60,12 @@ test.describe('Checkers Capture Mechanics', () => {
   });
 
   test('Mandatory Multi-Jump Continuation - Other Piece', async ({ checkersPage }) => {
-    const setup: { x: number; y: number; piece: PieceName }[] = [
-      { x: 2, y: 2, piece: "red" },
-      { x: 3, y: 3, piece: "blue" },
-      { x: 5, y: 5, piece: "blue" },
-      { x: 0, y: 0, piece: "red" },
-      { x: 7, y: 7, piece: "blue" },
+    const setup: { x: number; y: number; piece: PieceState }[] = [
+      { x: 2, y: 2, piece: PieceState.Red },
+      { x: 3, y: 3, piece: PieceState.Blue },
+      { x: 5, y: 5, piece: PieceState.Blue },
+      { x: 0, y: 0, piece: PieceState.Red },
+      { x: 7, y: 7, piece: PieceState.Blue },
     ];
     await checkersPage.setBoard(setup);
     await checkersPage.movePiece({ x: 2, y: 2 }, { x: 4, y: 4 });
@@ -84,11 +84,11 @@ test.describe('Checkers Capture Mechanics', () => {
   });
 
   test('Multi-Jump Continuation - Stay Still', async ({ checkersPage }) => {
-    const setup: { x: number; y: number; piece: PieceName }[] = [
-      { x: 2, y: 2, piece: "red" },
-      { x: 3, y: 3, piece: "blue" },
-      { x: 5, y: 5, piece: "blue" },
-      { x: 7, y: 7, piece: "blue" },
+    const setup: { x: number; y: number; piece: PieceState }[] = [
+      { x: 2, y: 2, piece: PieceState.Red },
+      { x: 3, y: 3, piece: PieceState.Blue },
+      { x: 5, y: 5, piece: PieceState.Blue },
+      { x: 7, y: 7, piece: PieceState.Blue },
     ];
     await checkersPage.setBoard(setup);
     await checkersPage.movePiece({ x: 2, y: 2 }, { x: 4, y: 4 });

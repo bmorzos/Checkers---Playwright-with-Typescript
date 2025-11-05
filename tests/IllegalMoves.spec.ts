@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/Checkers.fixture';
-import { PieceName, PieceState } from '../pages/CheckersPage';
+import { PieceState } from '../pages/CheckersPage';
 
 test.describe.configure({ mode: 'parallel' });
 
@@ -11,7 +11,7 @@ test.describe('Checkers Rules Enforcement & Illegal Moves', () => {
     const finalBoard = await basicBoardPage.getLogicalBoardState();
     expect(finalBoard[2][2]).toBe(PieceState.Red);
     expect(finalBoard[3][3]).toBe(PieceState.Empty);
-    expect(await basicBoardPage.getMessageText()).toContain("Click on your orange piece");
+    await expect(basicBoardPage.messageLocator).toContainText("Click on your orange piece");
   });
 
   test('Click Opponent Piece', async ({ basicBoardPage }) => {
@@ -20,7 +20,7 @@ test.describe('Checkers Rules Enforcement & Illegal Moves', () => {
     const finalBoard = await basicBoardPage.getLogicalBoardState();
     expect(finalBoard[7][7]).toBe(PieceState.Blue);
     expect(finalBoard[2][2]).toBe(PieceState.Red);
-    expect(await basicBoardPage.getMessageText()).toContain("Click on your orange piece");
+    await expect(basicBoardPage.messageLocator).toContainText("Click on your orange piece");
   });
 
   test('Backwards', async ({ basicBoardPage }) => {
@@ -55,9 +55,9 @@ test.describe('Checkers Rules Enforcement & Illegal Moves', () => {
   });
 
   test('Occupied by Opponent, No Capture', async ({ basicBoardPage }) => {
-    const adjacentSetup: { x: number; y: number; piece: PieceName }[] = [
-      { x: 2, y: 2, piece: "red" },
-      { x: 3, y: 3, piece: "blue" },
+    const adjacentSetup: { x: number; y: number; piece: PieceState }[] = [
+      { x: 2, y: 2, piece: PieceState.Red },
+      { x: 3, y: 3, piece: PieceState.Blue },
     ];
     await basicBoardPage.setBoard(adjacentSetup);
     await basicBoardPage.movePiece({ x: 2, y: 2 }, { x: 3, y: 3 });
@@ -79,7 +79,7 @@ test.describe('Checkers Rules Enforcement & Illegal Moves', () => {
     await basicBoardPage.selectPiece({ x: 2, y: 2 });
     await basicBoardPage.clickSquare(1, 3);
 
-    expect(await basicBoardPage.getMessageText()).toContain("Select an orange piece to move.");
+    await expect(basicBoardPage.messageLocator).toContainText("Select an orange piece to move.");
     
     await basicBoardPage.clickSquare(4, 2);
 
