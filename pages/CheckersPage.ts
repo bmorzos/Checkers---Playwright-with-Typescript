@@ -88,7 +88,11 @@ export class CheckersPage {
   }
 
   async setBoard(pieces: { x: number; y: number; piece: PieceState }[]) {
-    
+    await this.page.waitForFunction(() => {
+      const win = window as any;
+      return typeof win.draw === 'function' && typeof win.board === 'object';
+    });
+
     // Pass both the pieces and our new map into the browser context
     await this.page.evaluate(({ piecesToPlace, imageMap }) => {
       const win = window as any;
@@ -173,5 +177,3 @@ export class CheckersPage {
     return boardState;
   }
 }
-
-  
