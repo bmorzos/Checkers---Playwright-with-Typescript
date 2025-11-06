@@ -154,20 +154,10 @@ export class CheckersPage {
   }
 
   private getVisualStateFromSrc(src: string | null): string {
-    if (!src) return 'unknown';
+      if (!src) return 'unknown';
+      const matchingKey = Object.keys(this.visualStateMap).find(key => src.includes(key));
 
-    if (src.includes('you2.gif')) return 'red - selected';
-    if (src.includes('me2.gif')) return 'blue - selected';
-    if (src.includes('you2k.gif')) return 'redKing - selected';
-    if (src.includes('me2k.gif')) return 'blueKing - selected';
-    if (src.includes('you1k.gif')) return 'redKing';
-    if (src.includes('me1k.gif')) return 'blueKing';
-    if (src.includes('you1.gif')) return 'red';
-    if (src.includes('me1.gif')) return 'blue';
-    if (src.includes('gray.gif')) return 'empty';
-    if (src.includes('black.gif')) return 'non-playable';
-    
-    return 'unknown';
+      return matchingKey ? this.visualStateMap[matchingKey] : 'unknown';
   }
 
   async getVisualBoardState(): Promise<string[][]> {

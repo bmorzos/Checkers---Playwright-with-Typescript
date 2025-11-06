@@ -126,7 +126,7 @@ test.describe('Kinging Mechanics', () => {
     expect(currentBoard[2][6]).toBe(PieceState.Empty);
   });
 
-  test.only('Computer gets Kinged', async ({ checkersPage}) => {
+  test('Computer gets Kinged', async ({ checkersPage}) => {
     const setup: { x: number; y: number; piece: PieceState }[] = [
       { x: 7, y: 1, piece: PieceState.Blue },
       { x: 2, y: 2, piece: PieceState.Red },
