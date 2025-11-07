@@ -24,12 +24,26 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+
+  expect: {
+    toHaveScreenshot: {
+      // An acceptable pixel difference. Prevents failures from
+      // tiny anti-aliasing changes between runs.
+      maxDiffPixels: 100,
+      
+      // Helps stabilize tests by disabling animations
+      animations: 'disabled',
+      caret: 'hide',
+    }
+  },
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
     baseURL: 'https://www.gamesforthebrain.com',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    //trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
   },
 
   /* Configure projects for major browsers */

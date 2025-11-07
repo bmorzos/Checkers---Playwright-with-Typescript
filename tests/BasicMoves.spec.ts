@@ -8,8 +8,9 @@ test.describe('Checkers Basic Mechanics', () => {
   test('Select Piece', async ({ basicBoardPage }) => {
     await basicBoardPage.selectPiece({ x: 2, y: 2 });
 
-    const finalBoard = await basicBoardPage.getVisualBoardState();
-    expect(finalBoard[2][2]).toBe('red - selected');
+    // const finalBoard = await basicBoardPage.getVisualBoardState();
+    // expect(finalBoard[2][2]).toBe('red - selected');
+    await expect(basicBoardPage.boardLocator).toHaveScreenshot('selected-piece-2-2.png');
   });
 
   test('Deselect Piece', async ({ basicBoardPage }) => {
@@ -32,10 +33,10 @@ test.describe('Checkers Basic Mechanics', () => {
   test('Valid Forward-Left Move', async ({ basicBoardPage }) => {
     await basicBoardPage.movePiece({ x: 2, y: 2 }, { x: 3, y: 3 });
 
-    const finalBoard = await basicBoardPage.getLogicalBoardState();
-    expect(finalBoard[2][2]).toBe(PieceState.Empty);
-    expect(finalBoard[3][3]).toBe(PieceState.Red);
-
+    // const finalBoard = await basicBoardPage.getLogicalBoardState();
+    // expect(finalBoard[2][2]).toBe(PieceState.Empty);
+    // expect(finalBoard[3][3]).toBe(PieceState.Red);
+    await expect(basicBoardPage.boardLocator).toHaveScreenshot('board-after-forward-left-move.png');
     await expect(basicBoardPage.messageLocator).toContainText('Select an orange piece to move.');
   });
 

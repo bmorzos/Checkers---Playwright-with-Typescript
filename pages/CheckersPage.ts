@@ -1,4 +1,4 @@
-import { Page, Locator, expect } from '@playwright/test';
+import { Page, Locator } from '@playwright/test';
 
 export type Coords = { x: number; y: number };
 export type LogicalBoard = number[][];
@@ -24,6 +24,7 @@ export class CheckersPage {
   readonly pageHeader: Locator;
   readonly rulesLink: Locator;
   readonly restartLink: Locator;
+  readonly boardLocator: Locator;
   readonly rulesLinkHref: string = 'https://en.wikipedia.org/wiki/English_draughts#Starting_position';
 
   constructor(private page: Page) {
@@ -31,6 +32,7 @@ export class CheckersPage {
     this.pageHeader = this.page.getByRole('heading', { name: 'Checkers' });
     this.rulesLink = this.page.getByRole('link', { name: 'Rules' });
     this.restartLink = this.page.getByRole('link', { name: 'Restart...' });
+    this.boardLocator = this.page.locator('#board');
   }
 
   // Maps logical state numbers to their base image filename
@@ -157,7 +159,11 @@ export class CheckersPage {
     return boardState as LogicalBoard;
   }
 
+  // Lookup the visual state based on the image src
   private getVisualStateFromSrc(src: string | null): string {
+      // If the src attribute is missing (null or empty), return 'unknown'.
+      // This allows the test to fail gracefully at the assertion step
+      // (e.g., "expected 'red', got 'unknown'") instead of crashing the script.
       if (!src) return 'unknown';
       const matchingKey = Object.keys(this.visualStateMap).find(key => src.includes(key));
 
